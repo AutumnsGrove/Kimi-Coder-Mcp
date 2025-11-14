@@ -5,17 +5,30 @@
 ---
 
 ## Project Purpose
-[Fill in: What this project does - 1-2 sentences]
+Kimi-Coder-MCP is an MCP (Model Context Protocol) server that wraps Kimi CLI, enabling any MCP-compatible AI agent (like Claude Code) to use Kimi's powerful coding capabilities as an on-demand subagent. This creates a meta-architecture where AI agents can delegate specific coding tasks to other specialized AI agents.
 
 ## Tech Stack
-[Fill in: Technologies, frameworks, and languages used]
-- Language:
-- Framework:
-- Key Libraries:
-- Package Manager:
+- **Language**: Python 3.11+
+- **Framework**: FastMCP (MCP server framework)
+- **Key Libraries**: pexpect (interactive process control), pytest (testing)
+- **Package Manager**: UV (modern Python package manager)
+- **External Dependencies**: Kimi CLI (installed via `uv tool install kimi-cli`), Moonshot API key
 
 ## Architecture Notes
-[Fill in: Key architectural decisions, patterns, or structure]
+**Session Management**: Ephemeral sessions - each MCP tool call spawns a new Kimi CLI process, executes the task, captures file changes, and terminates.
+
+**File Tracking**: Pre/post-execution directory snapshots to detect created and modified files, returning file contents as artifacts.
+
+**5 MCP Tools Exposed**:
+1. `kimi_code_task` - Execute coding tasks
+2. `kimi_analyze_code` - Analyze existing code
+3. `kimi_prompt` - Generic prompt interface
+4. `kimi_refactor` - Refactor existing code
+5. `kimi_debug` - Debug errors with Kimi's help
+
+**API Key Handling**: Configurable via MCP server config or environment variables, with automatic setup flow if needed.
+
+**Working Directory**: Operates in current project root where MCP server runs.
 
 ---
 
