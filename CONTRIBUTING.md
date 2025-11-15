@@ -2,140 +2,102 @@
 
 Thank you for your interest in contributing to Kimi-Coder-MCP! This document provides guidelines and instructions for contributing.
 
+## Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Making Changes](#making-changes)
+- [Testing](#testing)
+- [Code Quality](#code-quality)
+- [Submitting Changes](#submitting-changes)
+- [Release Process](#release-process)
+
 ## Code of Conduct
 
-This project follows a simple principle: **Be kind and respectful to everyone**. We're all here to learn and build cool things together.
+This project adheres to a code of conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
 
-## How to Contribute
+## Getting Started
 
-### Reporting Bugs
+1. Fork the repository on GitHub
+2. Clone your fork locally
+3. Set up the development environment (see below)
+4. Create a new branch for your changes
+5. Make your changes
+6. Run tests and ensure they pass
+7. Submit a pull request
 
-Found a bug? Please open an issue with:
+## Development Setup
 
-1. **Clear title**: Describe the bug briefly
-2. **Steps to reproduce**: What did you do?
-3. **Expected behavior**: What should have happened?
-4. **Actual behavior**: What actually happened?
-5. **Environment**: OS, Python version, Kimi CLI version
-6. **Logs**: Include relevant error messages (sanitize sensitive data!)
+### Prerequisites
 
-### Suggesting Features
+- Python 3.11 or higher
+- UV package manager
+- Kimi CLI installed (`uv tool install kimi-cli`)
+- Git
 
-Have an idea? Open an issue with:
-
-1. **Use case**: What problem does this solve?
-2. **Proposed solution**: How would it work?
-3. **Alternatives**: Other approaches you considered
-4. **Examples**: Show how it would be used
-
-Or check [FUTURE_IDEAS.md](docs/FUTURE_IDEAS.md) and comment on existing ideas.
-
-### Pull Requests
-
-#### Before You Start
-
-1. **Check existing issues**: Make sure someone isn't already working on it
-2. **Open an issue first**: Discuss major changes before coding
-3. **Ask questions**: Not sure about something? Just ask!
-
-#### Development Setup
+### Installation
 
 ```bash
-# Fork and clone your fork
-git clone https://github.com/YOUR_USERNAME/kimi-coder-mcp.git
+# Clone your fork
+git clone https://github.com/YOUR-USERNAME/kimi-coder-mcp.git
 cd kimi-coder-mcp
 
 # Install dependencies
 uv sync
 
-# Install Kimi CLI (if not already installed)
-uv tool install --python 3.13 kimi-cli
+# Install Kimi CLI if not already installed
+uv tool install kimi-cli
 
-# Create a branch
-git checkout -b feature/your-feature-name
+# Run tests to verify setup
+uv run pytest
 ```
 
-#### Making Changes
+## Making Changes
 
-1. **Write code** following our style guidelines (below)
-2. **Add tests** for new features
-3. **Update docs** if needed
-4. **Run tests**: `uv run pytest`
-5. **Commit with clear messages**: See commit guidelines below
+### Branch Naming
 
-#### Code Style
+- `feat/description` - New features
+- `fix/description` - Bug fixes
+- `docs/description` - Documentation changes
+- `test/description` - Test additions/changes
+- `refactor/description` - Code refactoring
 
-We use a **functional-OOP hybrid** approach:
+### Commit Messages
 
-```python
-# Good: Small, focused functions
-def parse_kimi_output(output: str) -> dict:
-    """Parse Kimi CLI output into structured data."""
-    lines = output.strip().split("\n")
-    return {
-        "response": "\n".join(lines),
-        "success": True
-    }
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-# Good: Data transformation with comprehensions
-files_created = [
-    f for f in changed_files
-    if not f.existed_before
-]
+```
+<type>: <description>
 
-# Good: Composition over inheritance
-def create_session(config: SessionConfig) -> KimiSession:
-    authenticator = Authenticator(config.api_key)
-    tracker = FileTracker(config.working_dir)
-    return KimiSession(authenticator, tracker)
+[optional body]
 
-# Avoid: Deep inheritance hierarchies
-# Avoid: Complex nested logic
-# Avoid: Functions > 50 lines
+[optional footer]
 ```
 
-**Key Principles**:
-- Small functions (< 50 lines)
-- Type hints everywhere
-- Clear, descriptive names
-- Map/filter/comprehensions over loops when appropriate
-- Docstrings for all public APIs
-- Comments for "why" not "what"
+**Types:**
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `docs:` - Documentation changes
+- `test:` - Test additions/changes
+- `refactor:` - Code refactoring
+- `chore:` - Maintenance tasks
+- `perf:` - Performance improvements
 
-#### Type Hints
+**Examples:**
+```
+feat: add streaming support for Kimi responses
 
-Always use type hints:
+fix: correct timeout handling in KimiSession
 
-```python
-from typing import Optional, Dict, List
+docs: update README with installation instructions
 
-def kimi_code_task(
-    task_description: str,
-    context_files: Optional[List[str]] = None
-) -> Dict[str, Any]:
-    """Execute a coding task with Kimi.
-    
-    Args:
-        task_description: What to ask Kimi to do
-        context_files: Optional files to include as context
-        
-    Returns:
-        Structured response with output and file artifacts
-        
-    Raises:
-        KimiSessionError: If session fails to spawn
-        TimeoutError: If task exceeds timeout
-    """
-    pass
+test: add integration tests for kimi_debug tool
 ```
 
-#### Testing
+## Testing
 
-Write tests for:
-- ✅ New features
-- ✅ Bug fixes
-- ✅ Error cases
-- ✅ Edge cases
+### Running Tests
 
 ```bash
 # Run all tests
@@ -145,151 +107,168 @@ uv run pytest
 uv run pytest tests/test_session.py
 
 # Run with coverage
-uv run pytest --cov=kimi_mcp --cov-report=html
+uv run pytest --cov=src/kimi_mcp --cov-report=term-missing
 
-# Run with verbose output
-uv run pytest -v
+# Run specific test
+uv run pytest tests/test_session.py::TestKimiSession::test_session_initialization
 ```
 
-Example test:
+### Writing Tests
 
+- All new features must include tests
+- Aim for >80% code coverage
+- Use pytest fixtures for common setup
+- Mock external dependencies (Kimi CLI, file system where appropriate)
+- Test both success and error paths
+
+**Test file locations:**
+- Unit tests: `tests/test_*.py`
+- Integration tests: `tests/test_tools.py`
+- Fixtures: `tests/fixtures/`
+
+## Code Quality
+
+### Linting and Formatting
+
+```bash
+# Check linting with ruff
+uv run ruff check src/ tests/
+
+# Auto-fix linting issues
+uv run ruff check --fix src/ tests/
+
+# Format code with black
+uv run black src/ tests/
+
+# Check formatting
+uv run black --check src/ tests/
+```
+
+### Code Style Guidelines
+
+- Follow PEP 8
+- Use type hints for all public functions
+- Write docstrings for all public APIs (Google style)
+- Keep functions small (<50 lines)
+- One responsibility per function
+- Prefer composition over inheritance
+
+**Example:**
 ```python
-import pytest
-from kimi_mcp.session import KimiSession
-
-def test_session_spawn():
-    """Test that Kimi session spawns successfully."""
-    session = KimiSession()
-    assert session.spawn()
-    assert session.is_running
-    session.terminate()
-    assert not session.is_running
-
-def test_session_timeout():
-    """Test that session respects timeout."""
-    session = KimiSession(timeout=1)
-    with pytest.raises(TimeoutError):
-        session.run_task("sleep 10")
+def calculate_checksum(file_path: Path) -> str:
+    """Calculate MD5 checksum of a file.
+    
+    Args:
+        file_path: Path to the file
+        
+    Returns:
+        MD5 checksum as hex string
+        
+    Raises:
+        FileNotFoundError: If file doesn't exist
+    """
+    md5 = hashlib.md5()
+    with open(file_path, 'rb') as f:
+        for chunk in iter(lambda: f.read(8192), b''):
+            md5.update(chunk)
+    return md5.hexdigest()
 ```
 
-#### Commit Messages
+## Submitting Changes
 
-Use conventional commits:
+### Pull Request Process
 
-```
-feat: add streaming response support
-fix: handle API key with special characters
-docs: update installation instructions
-test: add tests for file tracking
-refactor: simplify session management
-chore: update dependencies
-```
+1. **Update Documentation**: Ensure README and docstrings are updated
+2. **Add Tests**: Include tests for new functionality
+3. **Run Tests**: Verify all tests pass locally
+4. **Update CHANGELOG**: Add entry in [Unreleased] section (if applicable)
+5. **Push Changes**: Push to your fork
+6. **Create PR**: Submit pull request with clear description
 
-Format:
-```
-<type>: <short description>
-
-<optional longer description>
-
-<optional footer>
-```
-
-Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `style`, `perf`
-
-#### Submitting PR
-
-1. **Push your branch**: `git push origin feature/your-feature-name`
-2. **Open PR** on GitHub
-3. **Fill in the template**: Describe what and why
-4. **Link issues**: "Closes #123"
-5. **Wait for review**: Be patient, we'll review ASAP
-6. **Address feedback**: Make requested changes
-7. **Merge**: Once approved, we'll merge!
-
-### PR Template
-
-When you open a PR, include:
+### Pull Request Template
 
 ```markdown
 ## Description
-Brief description of what this PR does
+Brief description of changes
 
-## Motivation
-Why is this change needed? What problem does it solve?
-
-## Changes
-- Bullet list of changes
-- Be specific
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
 
 ## Testing
-How did you test this? What should reviewers test?
+- [ ] All tests pass locally
+- [ ] Added new tests for changes
+- [ ] Updated documentation
 
 ## Checklist
-- [ ] Tests added/updated
+- [ ] Code follows style guidelines
+- [ ] Self-review completed
+- [ ] Comments added for complex logic
 - [ ] Documentation updated
-- [ ] Type hints added
-- [ ] All tests passing
-- [ ] No breaking changes (or clearly documented)
-
-## Screenshots (if applicable)
-Visual changes? Include before/after
-
-## Related Issues
-Closes #123
-Related to #456
+- [ ] No new warnings generated
 ```
 
-## Development Workflow
+### Code Review
 
-### Branch Strategy
+- At least one approval required
+- All CI checks must pass
+- Address all reviewer comments
+- Keep PRs focused and reasonably sized
+- Link related issues
 
-- `main`: Stable releases only
-- `develop`: Active development
-- `feature/*`: New features
-- `fix/*`: Bug fixes
-- `docs/*`: Documentation updates
+## Release Process
 
-### Release Process
+### Versioning
+
+We use [Semantic Versioning](https://semver.org/):
+- MAJOR: Breaking API changes
+- MINOR: New features (backward compatible)
+- PATCH: Bug fixes (backward compatible)
+
+### Release Checklist
 
 1. Update version in `pyproject.toml`
-2. Update `CHANGELOG.md`
-3. Create PR to `main`
-4. Tag release: `git tag v0.1.0`
+2. Update `CHANGELOG.md` with release notes
+3. Run full test suite
+4. Create git tag: `git tag -a v0.1.0 -m "Release v0.1.0"`
 5. Push tag: `git push origin v0.1.0`
-6. GitHub Actions handles the rest
+6. Create GitHub release with notes
 
 ## Project Structure
 
 ```
 kimi-coder-mcp/
-├── src/kimi_mcp/      # Main package
-│   ├── server.py      # MCP server & tools
-│   ├── session.py     # Kimi CLI session management
-│   ├── file_tracker.py # File change detection
-│   └── utils.py       # Helper functions
-├── tests/             # Test suite
-├── docs/              # Documentation
-└── pyproject.toml     # Project config
+├── src/kimi_mcp/          # Main source code
+│   ├── __init__.py        # Package initialization
+│   ├── server.py          # MCP server and tools
+│   ├── session.py         # Kimi CLI session management
+│   ├── file_tracker.py    # File change detection
+│   └── utils.py           # Helper functions
+├── tests/                  # Test files
+│   ├── test_session.py    # Session tests
+│   ├── test_file_tracker.py
+│   ├── test_tools.py      # Integration tests
+│   └── test_utils.py
+├── docs/                   # Documentation
+├── .github/workflows/     # CI/CD
+└── pyproject.toml         # Project configuration
 ```
 
 ## Getting Help
 
-- **Questions**: Open a GitHub Discussion
-- **Bugs**: Open an Issue
-- **Ideas**: Check FUTURE_IDEAS.md or open an Issue
-- **Chat**: (Discord/Slack if we set one up)
+- **Issues**: Use GitHub Issues for bug reports and feature requests
+- **Discussions**: Use GitHub Discussions for questions and ideas
+- **Email**: Contact maintainer for sensitive issues
 
-## Recognition
+## Additional Resources
 
-Contributors will be:
-- Listed in CONTRIBUTORS.md
-- Mentioned in release notes
-- Thanked profusely! 🎉
+- [PROJECT_SPEC.md](docs/PROJECT_SPEC.md) - Full technical specification
+- [README.md](README.md) - Project overview and usage
+- [docs/WHY.md](docs/WHY.md) - Project rationale
+- [MCP Documentation](https://modelcontextprotocol.io/) - Model Context Protocol
 
 ## License
 
 By contributing, you agree that your contributions will be licensed under the Apache License 2.0.
-
----
-
-**Thank you for contributing to Kimi-Coder-MCP!** Every contribution, no matter how small, helps make this project better. 🌱
