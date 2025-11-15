@@ -16,7 +16,7 @@ Different AI models excel at different tasks. Kimi-Coder-MCP creates a **meta-ar
 - **Kimi** (via this MCP server) handles specialized coding tasks with its massive 128K-256K token context window
 - **You** benefit from the strengths of both
 
-For more on the vision and use cases, see [WHY.md](WHY.md).
+For more on the vision and use cases, see [WHY.md](docs/WHY.md).
 
 ## ✨ Key Features
 
@@ -122,10 +122,11 @@ Generic prompt interface for any Kimi interaction.
 
 ## 📖 Documentation
 
-- **[WHY.md](WHY.md)** - Why this project exists and its vision
-- **[PROJECT_SPEC.md](PROJECT_SPEC.md)** - Complete technical specification
-- **[kimi-mcp-server-prompt.md](kimi-mcp-server-prompt.md)** - Development prompt used to build this
-- **[FUTURE_IDEAS.md](FUTURE_IDEAS.md)** - Potential enhancements and features
+- **[WHY.md](docs/WHY.md)** - Why this project exists and its vision
+- **[PROJECT_SPEC.md](docs/PROJECT_SPEC.md)** - Complete technical specification
+- **[kimi-mcp-server-prompt.md](docs/kimi-mcp-server-prompt.md)** - Development prompt used to build this
+- **[FUTURE_IDEAS.md](docs/FUTURE_IDEAS.md)** - Potential enhancements and features
+- **[QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** - Quick reference guide
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
 
 ## 🎯 Use Cases
@@ -142,7 +143,7 @@ Delegate tasks that benefit from Kimi's coding-specific strengths.
 ### Cost Optimization
 Use the right AI for each task to optimize costs.
 
-For more detailed use cases, see [WHY.md](WHY.md).
+For more detailed use cases, see [WHY.md](docs/WHY.md).
 
 ## 🧪 Development
 
