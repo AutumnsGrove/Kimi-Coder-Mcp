@@ -6,6 +6,7 @@ error handling, and common transformations.
 
 import logging
 import os
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -90,11 +91,23 @@ def validate_file_path(file_path: str, base_dir: str) -> bool:
     Returns:
         True if path is valid and safe, False otherwise
     """
-    # TODO: Implement path validation
-    # Resolve absolute paths and check if within base_dir
-    # Prevent .. traversal attacks
+    try:
+        # Handle empty strings
+        if not file_path or not base_dir:
+            return False
 
-    return True
+        # Resolve both paths to absolute paths
+        resolved_file = Path(file_path).resolve()
+        resolved_base = Path(base_dir).resolve()
+
+        # Check if file_path is relative to base_dir
+        resolved_file.relative_to(resolved_base)
+        return True
+    except (ValueError, RuntimeError, OSError):
+        # ValueError: path is not relative to base_dir
+        # RuntimeError: symlink loop or other path resolution issues
+        # OSError: invalid path or permission issues
+        return False
 
 
 def get_timeout(default: int = 300) -> int:
