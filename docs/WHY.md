@@ -121,6 +121,11 @@ Good question! Here's why the MCP wrapper adds value:
 - Present a clean, structured API
 - Handle errors and edge cases gracefully
 
+### 5. **More than just Text**
+- API returns text blobs
+- Coder CLI returns complete/edited project files
+- can use other programs like ffmpeg to create artifacts
+
 ## The Meta-Architecture Vision
 
 This project is more than just a wrapper—it's a proof of concept for **composable AI systems**.
