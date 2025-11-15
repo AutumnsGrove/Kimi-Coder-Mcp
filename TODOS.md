@@ -14,11 +14,11 @@
 - [ ] Set up pre-commit hooks for Python
 
 ## Core Implementation
-- [ ] Implement session.py - Kimi CLI session manager
-  - [ ] Spawn/manage pexpect processes
-  - [ ] API key detection and setup flow
-  - [ ] Command sending and output capture
-  - [ ] Timeout and error handling
+- [x] Implement session.py - Kimi CLI session manager
+  - [x] Verify kimi command availability via subprocess
+  - [x] Authentication check and setup flow
+  - [x] Command sending and output capture via subprocess
+  - [x] Timeout and error handling
 - [ ] Implement file_tracker.py - File change detection
   - [ ] Pre-execution directory snapshot
   - [ ] Post-execution diff detection
