@@ -48,6 +48,44 @@ class KimiSession:
         self.timeout = timeout
         self.interactive = interactive
         self.process: Optional[pexpect.spawn] = None
+        self.kimi_path: Optional[str] = None  # Will be set during spawn()
+
+    def _find_kimi_path(self) -> str:
+        """Find the kimi executable path.
+
+        Checks multiple locations:
+        1. In PATH (via shutil.which)
+        2. Common uv tool install locations
+
+        Returns:
+            Path to kimi executable
+
+        Raises:
+            RuntimeError: If kimi not found
+        """
+        # First check PATH
+        kimi_path = shutil.which("kimi")
+        if kimi_path:
+            return kimi_path
+
+        # Check common uv tool install locations
+        import pathlib
+        home = pathlib.Path.home()
+        common_paths = [
+            home / ".local" / "bin" / "kimi",
+            home / ".cargo" / "bin" / "kimi",
+            pathlib.Path("/usr/local/bin/kimi"),
+        ]
+
+        for path in common_paths:
+            if path.exists():
+                logger.debug(f"Found kimi at {path}")
+                return str(path)
+
+        raise RuntimeError(
+            "Kimi CLI not found. Install with: uv tool install kimi-cli\n"
+            f"Searched locations: PATH and {[str(p) for p in common_paths]}"
+        )
 
     def spawn(self) -> None:
         """Spawn Kimi CLI session (interactive) or verify availability (one-shot).
@@ -57,26 +95,27 @@ class KimiSession:
         """
         logger.info(f"Initializing Kimi session ({'interactive' if self.interactive else 'one-shot'}) in {self.working_dir}")
 
-        if shutil.which("kimi") is None:
-            raise RuntimeError("Kimi CLI not found. Install with: uv tool install kimi-cli")
+        kimi_path = self._find_kimi_path()
+
+        self.kimi_path = kimi_path  # Store for use in send methods
 
         if self.interactive:
             # Spawn pexpect process for interactive mode
             try:
                 self.process = pexpect.spawn(
-                    "kimi",
+                    kimi_path,
                     cwd=self.working_dir,
                     timeout=self.timeout,
                     encoding='utf-8'
                 )
-                logger.debug("Kimi CLI spawned in interactive mode")
+                logger.debug(f"Kimi CLI spawned in interactive mode from {kimi_path}")
                 # Wait for initial prompt (Kimi usually shows a prompt like ">" or "kimi>")
                 # You may need to adjust this based on actual Kimi behavior
                 self.process.expect([">", pexpect.TIMEOUT], timeout=5)
             except Exception as e:
                 raise RuntimeError(f"Failed to spawn Kimi CLI: {e}")
         else:
-            logger.debug("Kimi CLI verified (one-shot mode)")
+            logger.debug(f"Kimi CLI verified at {kimi_path} (one-shot mode)")
 
     def check_auth(self) -> bool:
         """Check if Kimi is authenticated by running a simple test command.
@@ -137,8 +176,11 @@ class KimiSession:
         """
         logger.info(f"Sending one-shot prompt: {prompt[:50]}...")
 
+        # Use the kimi path found during spawn()
+        kimi_cmd = self.kimi_path if self.kimi_path else self._find_kimi_path()
+
         cmd = [
-            "kimi",
+            kimi_cmd,
             "--print",
             "--yolo",
             "-w", str(self.working_dir),
