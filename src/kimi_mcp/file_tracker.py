@@ -32,12 +32,36 @@ class FileTracker:
         Returns:
             Dict mapping file paths to their MD5 checksums
         """
-        # TODO: Implement directory scanning and checksum calculation
         logger.debug(f"Creating snapshot of {self.working_dir}")
         snapshot = {}
 
-        # Walk directory and calculate checksums
-        # Exclude common ignore patterns (.git, __pycache__, etc.)
+        # Patterns to ignore during traversal
+        ignore_patterns = {".git", "__pycache__", ".venv", ".DS_Store", "node_modules"}
+        ignore_extensions = {".pyc"}
+
+        try:
+            for root, dirs, files in os.walk(self.working_dir):
+                # Remove ignored directories from dirs to prevent traversal
+                dirs[:] = [d for d in dirs if d not in ignore_patterns]
+
+                for file in files:
+                    # Skip ignored file extensions
+                    if any(file.endswith(ext) for ext in ignore_extensions):
+                        continue
+
+                    file_path = Path(root) / file
+                    try:
+                        # Calculate relative path from working_dir
+                        rel_path = file_path.relative_to(self.working_dir)
+                        checksum = self.calculate_checksum(file_path)
+                        if checksum:  # Only add if checksum calculation succeeded
+                            snapshot[str(rel_path)] = checksum
+                    except Exception as e:
+                        logger.warning(
+                            f"Error processing {file_path}: {e}"
+                        )
+        except PermissionError as e:
+            logger.warning(f"Permission denied accessing {self.working_dir}: {e}")
 
         return snapshot
 
@@ -57,13 +81,21 @@ class FileTracker:
         Returns:
             Tuple of (created_files, modified_files)
         """
-        # TODO: Implement change detection logic
         created = []
         modified = []
 
-        # Compare initial_state and final_state
-        # New files: in final but not in initial
-        # Modified files: in both but different checksum
+        # Find created files: in final_state but not in initial_state
+        for file_path in self.final_state:
+            if file_path not in self.initial_state:
+                created.append(file_path)
+
+        # Find modified files: in both states but checksums differ
+        for file_path in self.final_state:
+            if (
+                file_path in self.initial_state
+                and self.initial_state[file_path] != self.final_state[file_path]
+            ):
+                modified.append(file_path)
 
         logger.info(f"Detected {len(created)} created, {len(modified)} modified")
         return created, modified
@@ -78,16 +110,35 @@ class FileTracker:
             Dict mapping file paths to their contents
             Binary files are noted but content not included
         """
-        # TODO: Implement file reading with binary detection
         contents = {}
 
         for file_path in file_paths:
             full_path = self.working_dir / file_path
             try:
+                # Check if file exists
+                if not full_path.exists():
+                    logger.warning(f"File not found: {file_path}")
+                    continue
+
                 # Detect binary files
-                # Read text files
-                # Skip or note binary files
-                pass
+                if self.is_binary_file(full_path):
+                    contents[file_path] = "[Binary file, not displayed]"
+                    continue
+
+                # Read text file contents
+                try:
+                    with open(full_path, "r", encoding="utf-8") as f:
+                        contents[file_path] = f.read()
+                except UnicodeDecodeError:
+                    # Fallback to latin-1 encoding if UTF-8 fails
+                    try:
+                        with open(full_path, "r", encoding="latin-1") as f:
+                            contents[file_path] = f.read()
+                    except Exception as fallback_error:
+                        logger.warning(
+                            f"Error reading {file_path} with fallback encoding: {fallback_error}"
+                        )
+
             except Exception as e:
                 logger.warning(f"Error reading {file_path}: {e}")
 
@@ -102,9 +153,14 @@ class FileTracker:
         Returns:
             True if binary, False if text
         """
-        # TODO: Implement binary detection
-        # Read first 8KB and check for null bytes
-        return False
+        try:
+            with open(file_path, "rb") as f:
+                chunk = f.read(8192)  # Read first 8KB
+                # Check for null bytes which indicate binary content
+                return b"\x00" in chunk
+        except Exception as e:
+            logger.warning(f"Error checking if file is binary {file_path}: {e}")
+            return False
 
     def calculate_checksum(self, file_path: Path) -> str:
         """Calculate MD5 checksum of a file.
@@ -115,7 +171,15 @@ class FileTracker:
         Returns:
             MD5 checksum as hex string
         """
-        # TODO: Implement checksum calculation
         md5 = hashlib.md5()
-        # Read file in chunks and update md5
+        try:
+            with open(file_path, "rb") as f:
+                while True:
+                    chunk = f.read(8192)  # Read 8KB chunks
+                    if not chunk:
+                        break
+                    md5.update(chunk)
+        except Exception as e:
+            logger.warning(f"Error calculating checksum for {file_path}: {e}")
+            return ""
         return md5.hexdigest()
